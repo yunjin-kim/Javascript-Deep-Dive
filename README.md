@@ -7,4 +7,4 @@ Javascript Deep Dive
 # Reference
 - [모던 자바스크립트 Deep Dive](http://www.yes24.com/Product/Goods/92742567)
 
-- <"https://github.com/InSeong-So"/>👍
+- [InSeong-So]("https://github.com/InSeong-So"/)👍
