@@ -243,4 +243,89 @@ console.log(me); // {}
 명시적으로 원시값을 반환하면 원시값 반환은 무시되고 this가 반환된다
 
 
-## 프로토타입 메서드
+### 프로토타입 메서드
+
+클래스 몸체에서 정의한 메서드는 생성자 함수와는 다르게 클래스의 prototype 프로퍼티에 메서드를 추가하지 않아도 기본적으로 프로토타입 메서드가 된다
+```js
+class Person {
+  constructor(name) {
+    // 인스턴스 생성 및 초기화
+    this.name = name;
+  }
+  // 프로토타입 메서드
+  sayHi() {
+    console.log(`Hola ${this.name}`);
+  }
+}
+const me = new Person('Hong');
+me.sayHi(); // Hola Hong
+```
+생성자 함수와 마찬가지로 클래스가 생성한 인스턴스는 프로토타입 체인의 일원이 된다
+
+
+### 정적 메서드
+
+정적 메서드는 인스턴스를 생성하지 않아도 호출할 수 있는 메서드를 말한다
+클래스에서는 static 키워드를 붙여주면 정적 메서드가 된다
+```js
+class Person {
+  constructor(name) {
+    this.name = name;
+  }
+  // 정적 메서드
+  static sayHi() {
+    console.log('Hi');
+  }
+}
+```
+정적 메서드는 클래스에 바인당된 메서드가 된다
+클래스는 함수 객체로 평가되므로 자신의 프로퍼티/메서드를 소유할 수 있다
+클래스는 클래스 정의(클래스 선언문, 클래스 표현식)가 평가되는 시정에 함수 객체가 되므로
+인스턴스와 달리 별다른 생성과정이 필요없다
+따라서 정적 메서드는 클래스 정의 이후 인스턴스를 생성하지 않아도 호출할 수 있다
+```js
+// 정적 메서드는 클래스로 호출된다
+// 정적 메서드는 인스턴스 없이도 호출할 수 있다
+Person().sayHi();
+```
+정적 메서드는 인스턴스로 호출할 수 없다
+정적 메서드는 클래스에 속하고 클래스는 인스턴스의 프로토탕비 체인 상에 존재하지 않기 때문이다
+```js
+const me = new Person('Hong');
+me.sayHi(); // TypeError: me.sayHi is not a function
+```
+
+### 정적 메서드와 프로토타입 메서드 차이
+```js
+class Square {
+  // 정적 메서드
+  static area(width, height) {
+    return width * height;
+  }
+}
+console.log(Square.area(10, 10)); // 100
+```
+```js
+class Square {
+  constructor(width, height) {
+    this.width = width;
+    this.height = height;
+  }
+  // 프로토타입 메서드
+  area() {
+    return this.width * this.height;
+  }
+}
+const square = new Square(10, 10);
+console.log(square.area()); // 100
+// square 객체로 프로토타입 메서드 area를 호출했기 때문에 area 내부의 this는 square 객체를 가리킨다
+```
+메서드 내부의 this는 메서드를 소유한 객체가 아니라 메서드를 호출한 객체, 이름 앞의 마침표 연산자 앞에 기술한 객체에 바인딩된다
+프로토타입 메서드는 인스턴스로 호출해야 하므로 프로토타입 메서드 내부의 this는 프로토타입 메서드를 호출한 인스턴스를 가리킨다
+정적 메서드는 클래스로 호출해야 하므로 정적 메서드 내부의 this는 인스턴스가 아닌 클래스를 가리킨다
+
+메서드 내부에서 this를 사용한다면 프로토타입 메서드, this를 사용하지 않는다면 정적 메서드로 호출하는 것이 좋다
+
+
+## 인스턴스 프로퍼티
+
