@@ -329,3 +329,151 @@ console.log(square.area()); // 100
 
 ## 인스턴스 프로퍼티
 
+인스턴스 프로퍼티는 constructor 내부에서 정의해야 한다
+constructor 내부 코드가 실행되기 이전에 constructor 내부의 this에는 
+이미 클래스가 암묵적으로 생성한 인스턴스인 빈 객체가 바인딩되어 있다
+
+constructor 내부에서 this에 인스턴스 프로퍼티를 추가하면 인스턴스가 초기화 된다
+
+
+## 접근자 프로퍼티
+```js
+class Person {
+  constructor(firstName, lastName) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+  }
+  // getter 함수
+  get fullName() {
+    return `${this.firstName}${this.lastName}`;
+  }
+  // setter 함수
+  set fullName(name) {
+    [this.firstName, this.lastName] = name.splite(' ');
+  }
+}
+
+const me = new Person('Hong', 'siyoung');
+// 데이터 프로퍼티를 통한 프로퍼티 값의 참조
+console.log(`${me.firstName} ${me.lastName}`); // Hong siyoung
+// 접근자 프로퍼티를 통한 프로퍼티 값의 저장
+// 접근자 프로퍼티 fullName에 값을 저장하면 setter 함수가 호출된다
+me.fullName = 'Gu wonchan';
+console.log(me); // {firstName: "Gu", lastName: "wonchan"}
+// 접근자 프로퍼티를 통한 프로퍼티 값의 참조
+// 접근자 프로퍼티 fullName에 접근하면 getter 함수가 호출된다
+console.log(me.fullName); // Gu wonchan
+```
+
+getter와 setter는 호출하는 것이 아니라 프로퍼티처럼 참조하는 형식으로 사용한다
+
+## 클래스 필드
+
+클래스 필드에는 메서드만 선언할 수 있다
+```js
+class NameClass {
+  name = ''; // SyntaxError
+  // 클래스 필드의 선언과 초기화는 반드시 constructor에서 실시한다
+  constructor(name) {
+    this.name = name;
+  }
+}
+```
+현재는 정상적으로 동작히자만 아직 ECMAScript의 정직 표준 사양으로 승급되지 않았다
+최신 브라우저와 최신 Node.js에서는 클래스 필드를 클래스 몸체에 정의할 수 있다
+
+
+## super 키워드 
+
+super 키워드는 함수처럼 호출할 수 있고 this와 같이 식별자처럼 참조할 수 있는 특수한 키워드다
+- super를 호출하면 수퍼클래스의 constructor(super-constructor)를 호출한다
+- super를 참조하면 수퍼클래스의 메서드를 호출할 수 있다
+
+### super 호출
+super를 호출하면 수퍼(부모)클래스의 constructor(super-constructor)를 호출한다
+```js
+// 수퍼 클래스
+class Super {
+  constructor(a, b) {
+    this.a = a;
+    this.b = b;
+  }
+}
+// 서브 클래스
+class Sub extends Super {
+  // 암묵적으로 constructor가 정의되지만 직접 입력할 수 있다
+  // constructor(...args) { super(...args); }
+  constructor(a, b, c) {
+    super(a, b);
+    this.c = c;
+  }
+}
+const sub = new Sub(1, 2, 3);
+console.log(sub); // Sub {a: 1, b: 2, c: 3}
+```
+수퍼클래스에서 추가한 프로퍼티와 서브클래스에서 추가한 프로퍼티를 갖는 인스턴스를 생성한다면 
+서브클래스의 constructor를 생략할 수 있다
+
+super를 호출할 때 주의사항
+1. 서브클래스에서 constructor를 생략하지 않는 경우 서브클래스의 constructor에서는 반드시 super를 호출해야 한다
+2. 서브 클래스의 constructor를에서 super를 호출하기 전에는 this를 참조할 수 없다
+3. super는 반드시 서브클래스의 constructor에서만 호출한다. 서브 클래스가 아닌 클래스의 constructor에서 호출하면 오류가 발생한다
+
+### super 참조
+메서드 내에서 super를 참조하면 수퍼클래스의 메서드를 호출할 수 있다
+1. 서브클래스의 프로토타입 메서드 내에서 super.메서드는 수퍼클래스의 프로토타입 메서드를 가리킨다
+```js
+//수퍼 클래스
+class Super {
+  constructor(name) {
+    this.name = name;
+  }
+  sayHola() {
+    return `Hola ${this.name}`;
+  }
+}
+// 서브 클래스
+class Sub extends Super {
+  sayHola() {
+    return `${super.sayHola()}. how are you`;
+  }
+}
+const sub = new Sub('Hong');
+console.log(sub.sayHola()); // Hola Hong. how are you
+```
+
+super 참조를 통해 수퍼클래스의 메서드를 참조하려면 super가 수퍼클래스의 메서드가 바인된 객체,
+수퍼클래스의 prototype 프로퍼티에 바인딩된 프로토타입을 참조할 수 있어야 한다
+```js
+// 수퍼클래스
+class Super {
+  constructor(name) {
+    this.name = name;
+  }
+  sayHola() {
+    return `Hola ${this.name}`;
+  }
+}
+class sub extends Super {
+  sayHola() {
+    // __super는 Super.prototype을 가리킨다
+    const __super = Object.getPrototypeOf(Super.prototype);
+    retunr `${__super.sayHola.call(this)} how are you`;
+  }
+}
+```
+이렇게 동작하기 위해 메서드는 내부 슬롯 [[HomeObject]]를 가지며 자신을 바인딩하고 있는 객체를 가리킨다
+단 ES6의 메서드 축약 표현으로 정의된 함수만 [[HomeObject]]를 갖는다
+```js
+const obj = {
+  foo() {},
+  bar: function() {}
+}
+```
+super 참조를 의사코드로 표현하면 다음과 같다
+```js
+super = Object.getProtoypeOf([[HomeObject]])
+```
+- [[HomeObject]]는 메서드 자신을 바인딩하고 있는 객체를 가리킨다
+- [[HomeObject]]를 통해 메서드 자신을 바인딩하고 있는 객체의 프로토타입을 찾을 수 있다
+- Sub 클래스의 sayHola 메서드는 Sub.prototype에 바인딩 되어있다 따라서 Sub클래스의 sayHola 메서드의 [[HomeObject]]는 Sub.prototype이고 이를 통해 Sub 클래스의 sayHola 메서드 내부의 super 참조가 Super.protoype으로 결정된다 최종적으로 super.sayHola는 Super.protoype.sayHola를 가리키게 된다
