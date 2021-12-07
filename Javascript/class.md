@@ -527,3 +527,5 @@ super = Object.getProtoypeOf([[HomeObject]])
 
 - 인스턴스 반환
   - 클래스의 모든 처리가 끝나면 완성된 인스턴스가 바인딩된 this가 암묵적으로 반환된다
+
+이해안가면 [생활코딩](https://opentutorials.org/module/4047/24620)
