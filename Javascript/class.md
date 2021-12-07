@@ -454,7 +454,7 @@ class Super {
     return `Hola ${this.name}`;
   }
 }
-class sub extends Super {
+class Sub extends Super {
   sayHola() {
     // __super는 Super.prototype을 가리킨다
     const __super = Object.getPrototypeOf(Super.prototype);
@@ -477,3 +477,53 @@ super = Object.getProtoypeOf([[HomeObject]])
 - [[HomeObject]]는 메서드 자신을 바인딩하고 있는 객체를 가리킨다
 - [[HomeObject]]를 통해 메서드 자신을 바인딩하고 있는 객체의 프로토타입을 찾을 수 있다
 - Sub 클래스의 sayHola 메서드는 Sub.prototype에 바인딩 되어있다 따라서 Sub클래스의 sayHola 메서드의 [[HomeObject]]는 Sub.prototype이고 이를 통해 Sub 클래스의 sayHola 메서드 내부의 super 참조가 Super.protoype으로 결정된다 최종적으로 super.sayHola는 Super.protoype.sayHola를 가리키게 된다
+
+
+## 상속 클래스의 인스턴스 생성과정
+
+클래스는 단독으로 인스턴스를 생성하는 과정보다 상속관계에 있는 두 클래스가
+협력하며 인스턴스를 생성하는 과정이 더 복잡하다
+
+서버 클래스가 new 연산자와 함께 호출하면 다음과 같은 과저을 통해 인스턴스가 생성된다
+
+- 서브 클래스의 super 호출
+  - 자바스크립트 엔진은 클래스 평가시 수퍼  클래스와 서브 클래스를 구분하기 위해
+    super 또는 sub를 값으로 갖는 내부 슬롯 [[ConstructorKind]]를 갖는다
+  - 다른 클래스를 상속받지 않는 클래스는 내부 슬롯 [[ConstructorKind]]의 값이
+    super인 반면 다른 클래스를 상속받는 클래스는 sub로 설정되어 이를 통해 동작이 구분된다
+  - 상속받는 클래스가 new 연산자와 함께 호츨되면 자신이 직접 인스턴스를 생성하지 않고
+    수퍼 클래스에 인스턴스 생성을 위임한다. 이게 바론 서브 클래스의 constructor에서
+    반드시 super를 호출해야하는 이유다
+  - super가 호출되면 수퍼 클래스의 constructor가 호출된다
+    서브 클래스의 constructor 내부에 super 호출이 없다면 에러가 발생하는 이유는
+    실제 인스턴스를 생성하는 주체는 수퍼 클래스이므로 수퍼 클래스의 constructor가 
+    호출되지 않으면 인스턴스를 생성할 수 없기 때문이다
+  
+- 수퍼 클래스의 인스턴스 생성과 this 바인딩
+  - 수퍼 클래스의 constructor 내부의 코드가 실행되기 이전에 암묵적으로 빈 객체를 생성하는데
+    이 빈 객체가 클래스의 인스턴스이다. 그리고 암묵적으로 생성된 빈 객체는 this에 바인딩된다
+    결국 수퍼 클래스의 constructor 내부의 this는 생성된 this를 가리키게 된다
+  - 이 때 인스턴스는 수퍼 클래스가 생성한 것이지만 new 연산자와 함께 호출된 클래스는 서브 클래스다
+    new 연산자와 함께 호출된 함수를 가리키는 new.target은 서브 클래스를 가리키며
+    인스턴스는 new.target이 가리키는 서브 클래스가 생성한 것으로 처리된다
+  - 결국 생성된 인스턴스의 프로토타입은 수퍼 클래스의 prototype 프로퍼티가 가리키는 객체가 아니라
+    new.target이 가리키는 서브 클래스의 prototype 프로퍼티의 객체가 된다
+      - new 연산자와 함께 생성자 함수로서 호출하면 함수 내부의 new.target은 함수 자신을 가리킨다
+        new 연산자 없이 일반 함수로서 내부의 new.target은 undefined다
+
+- 수퍼 클래스의 인스턴스 초기화
+  - 수퍼 클래스의 constructor가 실행되고 this에 바인딩된 인스턴스를 초기화한다
+
+- 서브 클래스 constructor로의 복귀와 this 바인딩
+  - super 호출이 종료되고 제어 흐름이 서브 클래스로 돌아오면 
+    super가 반환한 인스턴스가 this에 바인딩된다
+  - 서브 클래스는 별도의 인스턴스를 생성하지 않고 super가 반환한 인스턴스를 
+    this에 바인딩하여 그대로 사용한다
+  - 이처럼 super가 호출되지 않으면 인스턴스가 생성되기는 커녕 this 바인딩도 이루아지지 않는다
+    서브 클래스의 constructor에서 super가 호출하기 전에는 this를 참조할 수 없는 이유다
+
+- 서브 클래스의 인스턴스 초기화
+  - 서브 클래스의 constructor가 실행되고 this에 바인딩된 인스턴스 프로퍼티를 추가한다
+
+- 인스턴스 반환
+  - 클래스의 모든 처리가 끝나면 완성된 인스턴스가 바인딩된 this가 암묵적으로 반환된다
