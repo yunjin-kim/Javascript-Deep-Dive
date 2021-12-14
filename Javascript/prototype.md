@@ -62,3 +62,71 @@ consle.log(circle.getArea()); // 78.53816...
 
 
 ## 상속과 프로토타입
+
+상속은 어떤 객체가 프로퍼티 또는 메서드를 다른 객체가 상속받아 그대로 사용할 수 있는 것을 말한다
+
+상속을 통해 불필요한 중복을 제거하고 기존 코드를 재사용함에 있어 중요하다
+```js
+// 생성자 함수
+function Circle(radius) {
+  // 프로퍼티
+  this.radius = radius;
+  // 메서드
+  this.getArea = function () {
+    return Math.PI * this.radius ** 2;
+  };
+}
+
+// 반지름이 1인 인스턴스 생성
+const circle1 = new Circle(1);
+// 반지름이 2인 인스턴스 생성
+const circle2 = new Circle(2);
+
+console.log(circle1.getArea === circle2.getArea); // false
+console.log(circle1.getArea()); // 3.14...
+console.log(circle2.getArea()); // 12.56...
+```
+생성자 함수는 동일한 프로퍼티 구조를 갖는 객체를 여러개 생성할 때 매우 유용하다
+그러나 큰 문제가 있다
+**this.radius** 같은 프로퍼티 값은 일반적으로 인스턴스마다 다르다
+같은 상태를 가진다면 프로퍼티가 같을 수 있다
+그러나 **this.getArea** 같은 메서드는 모든 인스턴스가 동일한 내용의 메서드를 사용하므로
+단 하나만 생성하여 모든 인스턴스가 공유해서 사용하는 것이 바람직하다
+그런데 Circle 생성자 함수는 인스턴스를 생성할 때마다 
+getArea 메서드를 중복 생성하고 모든 인스턴스를 중복 소유한다
+
+이처럼 동일한 생성자 함수에 의해 생성된 모든 인스턴스가 
+동일한 메서드를 중복 소유하는 것은 메모리를 불필요하게 낭비한다
+또한 인스턴스를 생성할 때마다 메서드를 생성하므로 10개의 인스턴스를 생성하면 동일한 메서드도 10개 생성된다
+
+이러한 문제를 상속을 통해 불필요한 중복을 제거할 수 있다
+자바스크립트는 프로토타입을 기반으로 상속을 구현한다
+```js
+// 생성자 함수
+function Circle(radius) {
+  this.radius = radius;
+}
+
+// 프로토타입
+Circle.prototype.getArea = function() {
+  return Math.PI * this.radius ** 2;
+}
+
+// 인스턴스 생성
+const circle1 = new Circle(1);
+const circle2 = new Circle(2);
+
+console.log(circle1.getArea === circle2.getArea); // true
+
+console.log(circle1.getArea()); // 3.14...
+console.log(circle2.getArea()); // 12.56...
+```
+**console.log(circle1.getArea === circle2.getArea);**의 구문이 true이다
+
+이것은 자바스크립트 엔진이 프로토타입 기반의 상속에 의한 것이다
+Circle 생성자 함수가 생성한 모든 인스턴스는 상위 객체 역할인
+Circle.prototype의 모든 프로퍼티와 메서드를 상속 받기 때문이다
+getArea는 Circle의 프로토타입으로 단 하나만 생성되어 할당 되어있다
+그럼 Circle 생성자 함수로 생성된 모든 인스턴스는 getArea 메서드를 상속받아 사용할 수 있다
+
+즉, 자신의 생태를 나타내는 데이터는 **개별적으로 소유하고 동일한 기능을 나타내는 동작은 상속을 통해 공유**하는 것이다, 이것이 상속이 가지는 코드의 재사용성의 이점이다
