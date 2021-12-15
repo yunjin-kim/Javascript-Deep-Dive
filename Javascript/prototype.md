@@ -18,13 +18,13 @@ const person = {
 console.log(person); // {name: "Hong", address: "Seoul"}
 ```
 이떄 프로그래머는 이름과 주소 속성으로 표현된 객체인 person을 다른 객체와 구별해서 인식할 수 있다
-이처럼 **속성을 통해 여러 개의 값을 하나의 단위로 구성한 복합적인 자료구조**를 객체라하며
+이처럼 `속성을 통해 여러 개의 값을 하나의 단위로 구성한 복합적인 자료구조`를 객체라하며
 객체지향 프로그래밍은 독립적인 객체를 집합으로 프로그램을 표현하려는 프로그래밍 패러다임이다
 
 원이라는 개념의 객체
 원에는 반지름이라는 속성이 있다
-이때 반지름은 원의 **상태를 나타내는 데이터**이며
-원의 지름, 둘레, 넓이를 구하는 것이 **동작**이다
+이때 반지름은 원의 `상태를 나타내는 데이터`이며
+원의 지름, 둘레, 넓이를 구하는 것이 `동작`이다
 ```js
 const circle = {
   radius: 5, // 반지름
@@ -51,9 +51,9 @@ console.log(circle.getDiameter()); // 10
 console.log(circle.getPerimeter()); // 31.41592...
 consle.log(circle.getArea()); // 78.53816...
 ```
-이처럼 객체지향 프로그래밍은 객체의 **상태**를 나타내는 데이터와
-상태 데이터를 조작할 수 있는 **동작**을 하나의 논리적 단위로 묶어 셍각한다
-따라서 객체는 **상태 데이터와 동작을 하나의 논리적 단위로 묶은 복합적인 자료구조**라고 할 수 있다
+이처럼 객체지향 프로그래밍은 객체의 `상태`를 나타내는 데이터와
+상태 데이터를 조작할 수 있는 `동작`을 하나의 논리적 단위로 묶어 셍각한다
+따라서 객체는 `상태 데이터와 동작을 하나의 논리적 단위로 묶은 복합적인 자료구조`라고 할 수 있다
 이때 객체의 상태 데이터를 프로퍼티, 동작을 메서드라고 부른다
 이런 객체의 추가적인 기능은
 - 자신만의 기능을 수행과 동시에 다른 객체와 관계를 가진다
@@ -88,9 +88,9 @@ console.log(circle2.getArea()); // 12.56...
 ```
 생성자 함수는 동일한 프로퍼티 구조를 갖는 객체를 여러개 생성할 때 매우 유용하다
 그러나 큰 문제가 있다
-**this.radius** 같은 프로퍼티 값은 일반적으로 인스턴스마다 다르다
+`this.radius` 같은 프로퍼티 값은 일반적으로 인스턴스마다 다르다
 같은 상태를 가진다면 프로퍼티가 같을 수 있다
-그러나 **this.getArea** 같은 메서드는 모든 인스턴스가 동일한 내용의 메서드를 사용하므로
+그러나 `this.getArea` 같은 메서드는 모든 인스턴스가 동일한 내용의 메서드를 사용하므로
 단 하나만 생성하여 모든 인스턴스가 공유해서 사용하는 것이 바람직하다
 그런데 Circle 생성자 함수는 인스턴스를 생성할 때마다 
 getArea 메서드를 중복 생성하고 모든 인스턴스를 중복 소유한다
@@ -121,7 +121,7 @@ console.log(circle1.getArea === circle2.getArea); // true
 console.log(circle1.getArea()); // 3.14...
 console.log(circle2.getArea()); // 12.56...
 ```
-**console.log(circle1.getArea === circle2.getArea);**의 구문이 true이다
+`console.log(circle1.getArea === circle2.getArea);`의 구문이 true이다
 
 이것은 자바스크립트 엔진이 프로토타입 기반의 상속에 의한 것이다
 Circle 생성자 함수가 생성한 모든 인스턴스는 상위 객체 역할인
@@ -129,4 +129,89 @@ Circle.prototype의 모든 프로퍼티와 메서드를 상속 받기 때문이�
 getArea는 Circle의 프로토타입으로 단 하나만 생성되어 할당 되어있다
 그럼 Circle 생성자 함수로 생성된 모든 인스턴스는 getArea 메서드를 상속받아 사용할 수 있다
 
-즉, 자신의 생태를 나타내는 데이터는 **개별적으로 소유하고 동일한 기능을 나타내는 동작은 상속을 통해 공유**하는 것이다, 이것이 상속이 가지는 코드의 재사용성의 이점이다
+즉, 자신의 생태를 나타내는 데이터는 `개별적으로 소유하고 동일한 기능을 나타내는 동작은 상속을 통해 공유`하는 것이다, 이것이 상속이 가지는 코드의 재사용성의 이점이다
+
+
+### 프로토타입 객체
+
+자바스크립트의 모든 객체는 자신의 부모 역할을 하는 객체와 연결되어 있다
+이는 객체 지향 프로그래밍의 상속처럼 부모 객체의 기능을 상속받아 사용할 수 있게 한다
+이런 부모 객체를 프로토타입 객체, 줄여서 프로토타입이라고 한다
+
+모든 객첸는 `[[Prototype]]`이라는 내부 슬롯을 가지며 해당 슬롯에 저장되는 프로토타입은
+객체 생성방식에 의해 결정된다
+
+`[[Prototype]]` 내부슬롯에는 직접 접근할 수 없지만 `__proto__` 접근자 프로퍼티로 내부 슬롯이 가르키는 프로토타입에 간접적으로 접근할 수 있다
+
+- 프로토타입은 자신의 constructor 프로퍼티를 통해 생성자 함수에 접근할 수 있다
+- 생성자 함수는 자신의 prototype 프로퍼티를 통해 프로토타입에 접근할 수 있다
+
+결국 모든 객체는 하나의 프로토타입을 갖게 된다
+따라서 모든 프로토타입은 생성자 함수와 연결되어 있다고 할 수 있다
+
+### `__poroto__` 접근자 프로퍼티
+
+`모든 객체는 __proto__ 접근자 프로퍼티를 통해 자신의 프로토타입인 [[Prototype]]내부 슬롯에 간접적으로 접근할 수 있다` 
+
+#### `__proto__` 는 접근자 프로퍼티이다
+
+- Object.prototype의 접근자 프로퍼티 `__proto__`는 접근자 함수를 통해 `[[Prototype]] 내부 슬롯 값인 프로토타입을 취득(GET)하거나 할당(SET)한다`
+- `__pototype__` 접근자 프로퍼티를 사용하는 프로세스
+```js
+const obj = {};
+const parent = { x: 1 };
+// getter 함수인 get __proto__가 호출되어 obj 객체의 프로토타입 취득
+obj.__proto__;
+// setter 함수인 set __proto__ 가 호출되어 obj 객체의 프로토타입을 교체
+obj.__proto__ = parent;
+
+console.log(obj.x); // 1
+```
+
+#### `__proto__` 접근자 프로퍼티는 상속을 통해 사용된다
+
+`__proto__` 접근자 프로퍼티는 객체가 직접 소유하는 프로퍼티가 아니라 
+Object.prototype의 프로퍼티다
+모든 객체는 상속을 통해 Object.prototype.`__proto__` 접근자를 사용할 수 있다
+```js
+const person = { name: 'Hong' };
+
+// person 객체는 __proto__ 프로퍼티를 소유하지 않는다
+console.log(person.hasOnPrototype('__proto__')); // false
+
+// __proto__ 프로퍼티는 모든 객체의 프로토타입 객체인 Object.protoype의 접근자 프로퍼티다
+console.log(Object.getOwnPrototypeDescriptor(Object.prototype, '__proto__'));
+// {get: f, set: f, enumerable: false, configurable: true}
+
+// 모든 객체는 Object.prototype의 접근자 프로퍼티 __proto__를 상속받아 사용할 수 있다
+console.log({}.__proto__ === Object.prototype); // true
+```
+
+#### `__proto__` 접근자 프로퍼티를 통해 프로토타입에 접근하는 이유
+
+상호참조로 포로토타입 체인이 생성되는 것을 방지하기 위해서이다
+- 상호 참조(Cross-reference), 순환 참조(Circle-reference)라고도 하며 서로가 서로를 참조하는 관계를 말한다
+```js
+const person = {};
+const child = {};
+
+person1.__proto__ = person2;
+person2.__proto__ = person1; // TypeError: Cyclic __proto__ value
+```
+따라서 무조건 프로토타입을 교체할 수 없게, 양방향이 아닌, 단방향으로 연결되게끔
+`__proto__` 접근자 프로퍼티를 통해 접근 및 교체가 가능하도록 제약을 걸어놓은 것이다
+
+
+#### `__proto__` 접근자 프로퍼티를 코드 내에서 직접 사용하는 것을 권장하지 않는다
+- proto 접근자 프로퍼티는 ES5까지 비표준이었다, ES6에 와서 표준으로 채택한 것뿐이다
+- 권장되지 않는 이유는 모든 객체가 `__proto__` 접근자 프로퍼티를 사용할 수 있는 것은 아니기 때문이다
+```js
+// obj는 프로토타입 체인의 종점이다. 띠리서 Object.__proto를 상속받을 수 없다
+const obj = Object.create(null);
+console.log(obj.__proto__); // undefined
+
+// 따라서 __proto__ 보단 Object.getPrototypeOf 메서드를 사용하자
+console.log(Object.getPrototypeOf(obj)); // null
+```
+- 프로토타입 참조 취득시 : `Object.getPrototypeOf()`
+- 프로토타입 교체 시 : `Object.setPrototypeOf()`
