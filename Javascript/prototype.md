@@ -215,3 +215,51 @@ console.log(Object.getPrototypeOf(obj)); // null
 ```
 - 프로토타입 참조 취득시 : `Object.getPrototypeOf()`
 - 프로토타입 교체 시 : `Object.setPrototypeOf()`
+
+
+### 함수 객체의 prototype 프로퍼티
+
+함수 객체만이 소유하는 프로퍼티는 생성자 함수가 생성할 인스턴스의 프로토타입을 가리킨다
+
+이것이 일반 객체와 함수 객체가 다른 프로토타입을 갖는 이유이다
+그러나 생성자 함수로 호출할 수 없는 `non-constructor 함수`는 프로토타입 프로퍼티가 존재하지도, 생성하지도 않습니다
+```js
+// 함수 객체(construcotor) - 함수 선언문
+console.log((function(){}).hasOwnProperty('prototype')); // true
+
+// 함수 객체(constructor) - 함수 표현식
+const func = function(){};
+console.log(func.hasOwnProperty('prototype')); // true
+
+// 일반 객체
+console.log(({}).hasOwnProperty('prototype')); // false
+
+// 화살표 함수(non-contructor)
+console.log((() => {}).hasOwnProperty('prototype'), (() =>  {}).prototype); // false, undefined
+
+// 메서드 축약 표현(non-constructor)
+const obj = {foo(){}};
+console.log(obj.foo.hasOwnProperty('prototype'), obj.foo.prototype); // false, undefined
+```
+모든 객체가 가진 proto 접근자 프로퍼티와 함수 객체가 가진 prototype 프로퍼티는
+동일한 프로토타입을 가리킨다
+하지만 이들 프로퍼티가 사용하는 주체가 다르다
+
+|구분|소유|값|사용 주체|사용 목적|
+|----|---|---|--------|---------|
+|`__proto__`<br>접근자 프로퍼티|모든 객체|프로토타입 참조|모든 객체|객체자기자신 프로토타입<br> 접근|
+|`prototype`<br>프로퍼티|constructor|프로토타입 참조|생성자 함수|생성함수가 자신이 생성할<br>인스턴스에 프로토타입 할당|
+
+
+생성자 함수로 객체를 생성한 후 proto 접근자 프로퍼티와 prototype 프로퍼티로 프로토타입 객체에 접근하기
+```js
+// 생성자 함수
+function Person(name) {
+  this.name = nmae;
+}
+const me = new Person('Hong');
+// 결국 Person.prototype과 me.__proto__는 결국 동일한 프로토타입을 가리킨다
+console.log(Person.prototype === me.__poroto__); // true
+```
+
+### 프로토타입의 constructor 프로퍼티와 생성자 함수
