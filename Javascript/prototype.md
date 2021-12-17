@@ -263,3 +263,122 @@ console.log(Person.prototype === me.__poroto__); // true
 ```
 
 ### 프로토타입의 constructor 프로퍼티와 생성자 함수
+
+모든 프로토타입은 constructor 프로퍼티를 갖는다
+
+constructor 프로퍼티는 protoype 프로퍼티로 자신을 참조하고 있는 생성자 함수를 가리킨다
+이 연결은 생성자 함수가 생성될 때, 함수 객체가 생성될 때 아루어진다
+```js
+// 생성자 함수
+function Person(name) {
+  this.name = name;
+}
+
+const me = new Person('Hong');
+
+console.log(me.constructor === Person); // true
+```
+- Person 생성자 함수로 me 라는 인스턴스(객체)를 생성한다
+- me 객체는 constructor가 없지만 Person.prototype에는 constructor 프로퍼티가 있다
+- 따라서 me 객체는 Person.prototype의 constructor 프로퍼티를 상속받아 사용한다
+
+
+### 리터럴 표기법에 의해 생성된 객체의 생성자 함수와 프로토타입
+
+생성자 함수에 의해 생성된 인스턴스는 프로토타입의 constructor 프로퍼티에 의해 생성자 함수와 연결된다
+이 때 constructor 프로퍼티가 가리키는 생성자 함수는 인스턴스를 생성한 생성자 함수다
+```js
+// obj 객체를 생성한 생성자 함수는 Object다
+const obj = new Object();
+console.log(obj.constructor === Object); // true
+
+// add 함수 객체를 생성한 생성자 함수는 Function이다
+const add = new Function('a', 'b', 'return a + b');
+console.log(add.constructor === Function); // true
+
+// 생성자 함수
+function Person(name) {
+  this.name = name;
+}
+// me 객체를 생성한 생성자 함수는 Person이다
+const me = new Person('Hong');
+console.log(me.constructor === Person); // true
+```
+리터럴 표기법에 의한 객체 생성 방식과 같이 명시적으로 new 연산자와 함게 생성자 함수를 호출하여 인스턴스를 생성하지 않는 객체 생성 방식도 있다
+```js
+const num = 3;
+console.log(num.constructor === Number);
+
+const str = 'str';
+console.log(str.constructor === String);
+
+const bool = true;
+console.log(bool.constructor === Boolean);
+
+const obj = {};
+console.log(obj.constructor === Object);
+
+const add = function(a, b){ return a + b };
+console.log(add.constructor === Function);
+
+const arr = [1, 2, 3];
+console.log(arr.constructor === Array);
+
+const regexp = /is/gi;
+console.log(regexp.constructor === RegExp);
+```
+리터럴 표기법에 의해 생성된 객체도 프로토타입이 존재한다
+하지만 리터럴 표기법에 의해 생성된 객체의 경우 프로토타입의 constructor가 가리키는 생성자 함수가 반드시 객체를 생성한 생성자 함수라고 단정할 순 없다
+```js
+// obj 객체는 Object 생성자 함수로 생성한 객체가 아니라 객체리터럴로 생성헀다
+const obj = {};
+// 하지만 obj 객체의 생성자 함수는 Object 생성자 함수다
+console.log(obj.constructor === Object); // true
+```
+위 예제의 obj 객체는 Object 생성자 함수로 생성한 객체가 아니라
+객체 리터럴애ㅔ 의해 생성된 객체다
+하지만 obj 객체는 Object 생성자 함수와 constructor 프로퍼티에 연결되어 있다
+그렇다면 객체 리터럴에 의해 생성된 객체는 Object 생성자로 생성되는 것인가?
+
+Object 생성자 함수에 인수가 전달하지 않거나 undefined 또는 null을 인수로 전달하면서
+호출하면 내부적으로 추상연산 **OrdinaryObjectCreate**를 호출하여
+Object.prototype을 프로토타입으로 갖는 빈 객체를 생성한다
+
+```js
+// Object 생성자 함수에 의해 객체 생성
+// 인수가 전달되지 않았을 때 추상 연산 OrdinaryObjectCreate를 호출하여 빈 객체를 생성한다
+let obj = new Object();
+console.log(obj); // {}
+
+// new.target이 undefined나 Object가 아닌 경우
+// 인스턴스 -> Foo.prototype -> Object.prototype 순으로 프로토타입 체인이 생성된다
+class Foo extends Object {}
+new Foo(); // Foo {}
+
+// 인수가 전달될 경우에는ㄴ 인수를 객체로 변환한다
+// Number 객체 생성
+obj = new Object(123);
+console.log(obj); //Number {123}
+
+// String 객체 생성
+obj = new Object('123');
+console.log(obj); // String {123}
+```
+
+이처럼 **생성자 함수 호출**과 **객체 리터럴 평가**는 추상 연산 OrdinaryObjectCreate를
+호출하여 빈 객체를 생성하는 점에서 동일하는 new.target 확인이나 프로퍼티를 추가하는 처리등
+세부 내용은 다르다
+따라서 객체 리터럴에 의해 생성된 객체는 Object 생성자 함수가 생성한 객체가 아니다
+
+리터럴 표기법에 의해 생성된 객체도 상속을 위해 프로토타입이 필요하다
+따라서 리터럴 표기법에 의해 생성된 객체도 가상적인 생성자 함수를 갖는다
+프로토타입은 생성자 함수와 더불어 생성되며 prototype, constructor 프로퍼티에 의해
+연결되어 있기 때문이다
+**프로토타입과 생성자 함수는 단독으로 존재할 수 없고 언제나 쌍으로 존재한다**
+
+결론은 리터럴에 의해 생성된 객체는 생성자 함수에 의해 생성된 객체가 이니고
+생성과정, 스코프, 클로저 등 차이가 있지만
+생성된 객체로서 동일한 특성을 가지므로 본질적인 차이는 없다
+
+
+### 프로토타입 생성 시점
