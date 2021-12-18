@@ -382,3 +382,48 @@ console.log(obj); // String {123}
 
 
 ### 프로토타입 생성 시점
+
+객체는 리터럴 표기법 또는 생성자 함수에 의해 생성되므로 모든 객체는 생성자 함수와 연결되어 있다
+
+**프로토타입은 생성자 함수가 생성되느 시점에 더불어 생성된다**
+
+
+#### 사용자 정의 생성자 함수와 프로토타입 생성 시점
+
+생성자 함수로서 호출할 수 있는 함수, constructor 함수 정의가 평가되어
+함수 객체를 생성하는 시점에 프로토타입도 더불어 생성된다
+```js
+// constructor 함수
+function Person(name) {
+  this.name = name;
+}
+console.log(Person.prototype); // {construtor: f}
+```
+함수 선언문은 런타임 이전에 자바스크립트 엔진에 의해 먼저 실행되므로
+가장 우선적으로 함수 객체가 되고 프로토타입도 같이 생성된다
+
+위 예제처럼 생성된 객체는 프로토타입을 가지고 Person.prototype의 프로토타입도 존재하므로
+최상위 프로토타입은 Object.prototype이 된다
+**생성된 프로토타입의 프로토타입은 언제나 Object.prototype 이 된다**
+
+```js
+// non-constructor 함수
+const Person = (name) => {
+  this.name = name;
+}
+console.log(Person.prototype); // undefined
+```
+화살표 함수는 생성자가 없고 프로토타입도 없다
+
+
+#### 빌트인 생성자 함수와 프로토타입 생성 시점
+
+Object, String, Number, Function, Array, RegExp, Date, Promise등
+빌트인 생성자도 일반 함수와 마찬가지로 빌트인 생성자 함수가 생성되는 시점에 프로토타입이 생성된다
+모든 빌트인 생성자 함수는 전역 객체가 생성되는 시점에 생성된다
+생성된 프로토타입은 빌트인 생성자 함수의 prototype 프로퍼티에 바인딩된다
+
+객체가 생성되기 이전에 생성자 함수와 프로토타입은 이미 객체화되어 존재한다
+**이후 생성자 함수 또는 리터럴 표기법으로 객체를 생성하면 프로토타입은 생성된 객체의 [[Prototype]] 내부슬롯에 할당된다**
+이로써 생성된 객체는 프로토타입을 상속받는다
+
