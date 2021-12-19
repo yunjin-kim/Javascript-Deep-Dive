@@ -465,4 +465,18 @@ me.hasOwnProperty('name'); // true
 
 me.hasOwnProperty('name')과 같이 메서드를 호출하면 자바스크립트 엔진ㅇ은 다음과 같은 과저을 거쳐 메서드를 검색한다, 프로퍼티를 참조할 때도 마찬가지이다
 
-1. 
+1. 먼저 hasOwnProperty 메서드를 호출한 me 객체에서 hasOwnProperty 메서드를 검색한다
+    me 객체에는 hasOwnProperty 메서드가 없으므로 포로토타입 체인을 따라, 다시 말해 [[Prototype]] 
+    내부 슬롯에 바인딩 되어 있는 프로토타입(위 예제 경우 Person.prototype)으로 이동하여 hasOwnProperty를 검색한다
+
+2. Person.prototype에도 hasOwnProperty 메서드가 없으므로 프로토타입 체인을 따라, 다시말해 
+    [[Prototype]] 내부 슬롯에 바인딩되어 있는 프로토타입(위 예제 경우 Object.prototype)으로
+    이동하여 hasOwnProperty 메서드를 검색한다
+
+3. Object.prototype에는 hasOwnPrototype 메서드가 존재한다. 자바스크립트 엔진은 
+    Object.prototype.hasOwnProperty 메서드를 호출한다. 이때 Object.prototype.hasOwnProperty 메서드의 this에는 me 객체가 바인딩된다
+
+**Object.prototype을 프로토타입 체인의 종점이라 한다**
+
+**프로토타입 체인은 상속과 프로퍼티 검색을 위한 메커니즘이다**
+**스코프 체인은 식별자 검색을 위한 메커니즘이다**
