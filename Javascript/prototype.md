@@ -427,3 +427,42 @@ Object, String, Number, Function, Array, RegExp, Date, Promise등
 **이후 생성자 함수 또는 리터럴 표기법으로 객체를 생성하면 프로토타입은 생성된 객체의 [[Prototype]] 내부슬롯에 할당된다**
 이로써 생성된 객체는 프로토타입을 상속받는다
 
+
+
+### 프로토타입 체인
+
+```js
+function Person(name) {
+  this.name = name;
+}
+
+// 프로토타입 메서드
+Person.prototype.sayHello = function() {
+  console.log(`Hi~ My name is ${this.name}`);
+};
+
+const me = new Person('Hong');
+
+// hasOwnProperty는 Object.prototype의 메서드다
+console.log(me.hasOwnProperty('name')); // true
+
+Object.getPrototypeOf(me) === Person.prototype; // true
+
+Object.getPrototypeOf(Person.prototype) === Object.prototype; // true
+```
+Person 생성자 함수에 의해 생성된 me 객체는 Object.prototype의 매서드인 hasOwnProperty를 호출할 수 있다
+이것은 me 객체가 Person.prototype뿐만 아니라 Object.prototype도 상속 받았다는 것을 의미한다
+me 객체의 프로토타입은 Person.prototype이다
+
+
+**자바스크립트는 객체의 프로퍼티(메서드 포함)에 접근하려고 할 때 해당 객체에 접근하려는 프로퍼티가 없다면 [[Prototype]] 내부 슬롯의 참조를 따라 자신의 부모 역할을 하는 프로토타입의 프로퍼티를 순차적으로 검색한다. 이름 프로토타입 체인이라 한다. 프로토타입 체인은 자바스크립트가 객체지향 프로그래밍의 상속을 구현하는 매커니즘이다**
+
+```js
+// hasOwnProperty는 Object.prototype의 메서드다
+// me 객체는 프로토타입 체인을 따라 hasOwnProperty 메서드를 검색하여 시용한다
+me.hasOwnProperty('name'); // true
+```
+
+me.hasOwnProperty('name')과 같이 메서드를 호출하면 자바스크립트 엔진ㅇ은 다음과 같은 과저을 거쳐 메서드를 검색한다, 프로퍼티를 참조할 때도 마찬가지이다
+
+1. 
