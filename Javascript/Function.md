@@ -218,3 +218,146 @@ console.log(obj); // {name: 'Lee', age: 33}
 
 
 ## 순수 함수, 비순수 함수
+
+순수 함수: 순수 함수가 반환한 결과가 변수에 재할당하므로 추적이 쉽다
+```js
+let count = 0;
+// 순수 함수
+function increase(n) {
+  return ++n;
+}
+
+count = increase(count);
+console.log(count); // 1
+count = increase(count);
+console.log(count); // 2
+```
+
+비순수 함수: 외부 상태를 변경해 상태변화를 추적하기 힘들다
+```js
+let count = 0;
+// 비순수 함수
+function increase() {
+  return ++count;
+}
+
+increase();
+console.log(count); // 1
+increase();
+console.log(count); // 2
+```
+
+순수 함수는 부수 효과를 최대한 억제하여 오류를 피해 프로그램의 안정성을 높인다
+
+
+## 반환문
+
+함수 호출 표현식은 return 키워드가 반환한 반환값으로 평가된다
+
+반환문의 역할
+- 함수의 실행을 중단하고 외부로 결과값을 반환한다
+```js
+function sum(a, b) {
+  return a + b;
+
+  console.log(a, b); // 실행 X
+}
+console.log(sum(1, 2)) // 3
+```
+
+- 반환문을 지정하지 않거나 생략하면 undefined를 반환한다
+```js
+function foo() {
+  retrun;
+}
+function bar() {
+
+}
+console.log(foo()); // undefined
+console.log(bar()); // undefined
+```
+
+- return 키워드를 사용할 때 줄 바꿈을 한다면 ASI(세미콜론 자동 삽입 기능)에 의해 undefined가 반환된다
+```js
+function sum(a, b) {
+  return
+    a + b;
+}
+/* 
+  function sum(a, b) {
+  return;
+    a + b;
+}
+*/
+console.log(sum(1, 2)); // undefined
+```
+
+- 반환문은 함수의 몸체에서만 사용할 수 있다
+
+
+## 즉시 실행 함수
+
+- 함수의 선언과 동시에 즉시 호출되는 함수로 다시 호출할 수 없다
+
+- 기명 함수로 작성해도 상관없으나 다시 사용할 수 없으므로 익명 함수로 작성하는 것이 일반적이다
+
+- 반드시 그룹연산자**( () )**로 감싸야 한다. 그 이유는 함수 선언문의 형식과 일치하지 않기 때문이며 ASI 기능 또한 에러를 발생시킨다
+```js
+(function() {
+
+}());
+
+const res = (function() {
+  let a = 3;
+  let b = 3;
+  return a + b;
+}());
+
+console.log(res); // 6
+
+const sum = (function(a, b) {
+  return a + b; 
+}(3, 5));
+
+console.log(sum); // 8
+```
+
+
+## 재귀 함수
+
+함수가 자기 자신을 호출하는 것을 재귀 호출이라 한다
+재귀 함수는 재귀 호출을 수행하는 함수를 말한다
+
+- 재귀 함수는 자신을 무한으로 호출하므로 반드시 탈출 조건을 명시해야 한다
+```js
+function counter(n) {
+  if (n > 10) return;
+  counter(n + 1); // 재귀 호출
+}
+
+counter(1);
+```
+재귀 함수는 무한 반복에 빠질 위험이 있기 때문에 반복문을 사용하는 것보다
+재귀 함수를 사용하는 편이 직관적으로 이해하기 쉬울 때 한정적으로 사용한다
+
+
+## 중첩함수
+
+함수 내부에 정의된 함수를 중첩함수, 내부 함수라 한다 .중첩 함수를 포함하는 함수는 외부 함수하고 부른다. 중첩 함수는 외부 함수 내부에서만 호출할 수 있다
+중첩함수는 외부함수를 돕는 헬퍼 함수 역할을 한다
+```js
+function outer() {
+  let x = 1;
+  // 중첩 함수
+  function inner() {
+    let y = 2;
+    console.log(x + y); // 3
+  }
+  inner();
+}
+
+outer();
+```
+
+
+## 콜백 함수
