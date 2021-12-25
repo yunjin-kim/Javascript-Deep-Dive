@@ -150,3 +150,90 @@ bar();
 이처럼 상위 스코프의 어떤 식별자도 참조하지 않는 경우 모던 브라우저는 최적화를 통해 상위 스코프를 기억하지 않는다
 참조하지도 않는 식별자를 기억하는 것은 메모리 낭비이기 때문이다
 따라서 bar 함수는 클로저라고 할 수 없다
+
+
+## 클로저 활용
+
+**클로저는 상태(state)를 안전하게 변경하고 유지하기 위해 사용한다**
+**상태를 안전하게 은닉하고 특정 함수에게만 상태 변경을 허용하기 위해 사용한다**
+```js
+// 함수를 인수로 전달받고 함수를 변환하는 고차 함수
+// 자유 변수 counter를 기억하는 클로저를 반환한다
+function makeCounter(predicate) {
+  // 카운터 상태 변수
+  let counter = 0;
+
+  // 클로저 반환
+  return function() {
+    // 인수로 전달 받은 보조 함수에 상태 변경 위임
+    counter = predicate(counter);
+    return counter;
+  };
+}
+
+// 보조 함수
+function increase(n) {
+  return ++n;
+}
+
+// 보조 함수
+function decrease(n) {
+  return --n;
+}
+
+// 함수로 험수를 생성한다
+// makeCounter 함수는 보조 함수를 인수로 전달받아 함수를 반환한다
+const increaser = makeCounter(increase);
+console.log(increase()); // 1
+console.log(increase()); // 2
+
+// increaser 함수와는 별개의 독립된 렉시컬 환경을 갖기 땨문에 카운터 상태가 연동되지 않는다
+const decreaser = makeCounter(decrease);
+console.log(decrease()); // -1
+console.log(decrease()); // -2
+```
+makeCounter 함수는 고차함수이다
+mkaeCounter 함수가 반환하는 함수는 자신이 생성되었을 때의 렉시컬 환경인 makeCounter 함수의 스코프에 속한 counter 변수를 기억하는 클로저다
+makeCounter 함수는 인자로 전달받은 보조 함수를 합성하여 자신이 반환하는 함수의 동작을 변경할 수 있다
+**makeCounter 함수를 호출해 함수를 반환할 때 반환된 함수는 자신만의 독립된 렉시컬 환경을 갖는다**
+
+makeCounter 함수를 호출하면 makeCounter 함수의 실행 컨텍스트가 생성된다
+그리고 makeCounter 함수는 함수 객체를 생성하여 반환한 후 소멸된다
+makeCounter 함수가 반환한 함수는 makeCounter 함수의 렉시컬 환경을 상위 스코프로 기억하는 클로저이며 전역 변수인 increaser에 할당된다
+이 때 makeCounter 함수의 실행 컨텍스트는 소멸되지만 makeCounter 함수의 실행 컨텍스트의 렉시컬 환경은 makeCounter 함수가 반환한 함수의 **[[Environment]]** 내부 슬롯에 의해 참조되고 있기 때문에 소멸되지 않는다
+
+
+독립된 counter가 아니라 연동하여 증감이 가능한 카운터를 만들려면 렉시컬 환경을 공유하는 클로저를 만들어야 한다
+```js
+// 함수를 인수로 전달받고 함수를 변환하는 고차 함수
+// 자유 변수 counter를 기억하는 클로저를 반환한다
+const counter = (function() {
+  // 카운터 상태 변수
+  let counter = 0;
+  
+    // 클로저 반환
+  return function() {
+    // 인수로 전달 받은 보조 함수에 상태 변경 위임
+    counter = predicate(counter);
+    return counter;
+  };
+}());
+
+// 보조 함수 
+function increase(n) {
+  return ++n;
+}
+
+// 보조 함수
+function decrease(n) {
+  return --n;
+}
+
+// 보조함수를 전달 받아 호출
+console.log(counter(increase)); // 1
+console.log(counter(increase)); // 2
+
+// 자유 변수를 공유한다
+console.log(counter(decrease)); // 1
+console.log(counter(decrease)); // 0
+```
