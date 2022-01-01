@@ -20,3 +20,26 @@ Well-known Symbol.iterator를 프로퍼티 키로 사용한 메서드를 직접 
 이터레이터는 next 메서드를 호출하면 이터러블 순회하며 value와 done 프로퍼티를 갖는 **이터레이터 리절트 객체**를 반환한다
 이러한 규약을 이터레이터 프로토콜이라 하며, **이터레이터 프로토콜을 준수한 객체를 이터레이터**라 한다.
 이터레이터는 이터러블의 요소를 탐색하기 위한 포인터 역할을 한다
+
+이터레이션 프로토콜
+```js
+// iterable  순회 가능한 자료 구조           iterator   이터러블의 요소를 탐색하기 위한 포인터
+                                        {
+                                          next() {    // 이터레이터 리절트 객체
+[Symbol.iterator]() { ... }                 return { value: any, done: boolean };
+                                          }
+                                        }
+```
+
+
+### 이터러블
+
+이터러블 프로토콜을 준수한 객체를 이터러블이라 한다
+즉 이터러블은 **Symbol.iterator**를 프로퍼티 키로 사용한 메서드를 직접 구현하거나 프로토타입 체인을 통해 상속받은 객체를 말한다
+```js
+const isIterable = v => v !== null && typeof v[Symbol.iterator] === 'function';
+
+// 배열, 문자열, Map, Set 등은 이터러블이다
+isIterable([]);
+isIterable('');
+```
