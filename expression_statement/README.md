@@ -73,3 +73,39 @@ let x;
 // 할당문은 표현식인 문
 x = 10;
 ```
+
+
+
+## MINE
+리액트로 예로 들면
+```js
+// JSX
+<div id={if (result) { 'msg' }}>Hola</div>
+```
+```js
+// JS로 변환하면
+React.createElement("div", {id: if (result) { 'msg' }}, "Hola");
+```
+이 코드는 동작하지 않는다
+객체의 value에는 값이 들어가야 하는데 문이 들어가 있기 때문이다
+
+if문 대신
+```js
+id={result ? 'msg': null}
+```
+삼항 연산자를 사용하면 된다
+삼항 연산자(**표현식**)는 값으로 귀결되기 때문이다
+그래서 객체의 값에는 식도 들어갈 수 있다
+
+```js
+function App() {
+  return (
+    <>
+      {
+        // 중괄호 안에는 값과 식만 들어갈 수 있다
+        // 그래서 for문 대신 고차함수 map, filter, reduce를 사용해야 한다
+      }
+    </>
+  )
+}
+```
