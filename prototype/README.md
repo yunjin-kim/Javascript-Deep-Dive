@@ -476,7 +476,104 @@ me.hasOwnProperty('name')과 같이 메서드를 호출하면 자바스크립트
 3. Object.prototype에는 hasOwnPrototype 메서드가 존재한다. 자바스크립트 엔진은 
     Object.prototype.hasOwnProperty 메서드를 호출한다. 이때 Object.prototype.hasOwnProperty 메서드의 this에는 me 객체가 바인딩된다
 
-**Object.prototype을 프로토타입 체인의 종점이라 한다**
+## 정리
+Object.prototype을 프로토타입 체인의 종점이라 한다. 프로토타입 체인은 상속과 프로퍼티 검색을 위한 메커니즘이다
+스코프 체인은 식별자 검색을 위한 메커니즘이다.
+스코프 체인과 프로토타입 체인이 서로 연관없이 별도로 동작하는 것이 아니라 서로 협력하며 식별자와 프로퍼티를 검색하는데 사용된다
 
-**프로토타입 체인은 상속과 프로퍼티 검색을 위한 메커니즘이다**
-**스코프 체인은 식별자 검색을 위한 메커니즘이다**
+
+### 오버라이딩, 프로퍼티 섀도잉
+
+```js
+const Person = (function() {
+  // 생성자 함수
+  function Person(name) {
+    this.name = name;
+  }
+
+  // 프로토타입 메서드
+  Person.prototype.sayHola = function() {
+    console.log(`Hola ${this.name}`);
+  };
+
+  // 생성자 함수를 반환
+  return Person;
+}());
+
+const me = new Person('Hong');
+
+// 인스턴스 메서드
+me.sayHola = function() {
+  console.log(`My name is ${this.name}`);
+};
+
+// 인스턴스 메서드가 호출된다. 프로토타입 메서드는 인스턴스 메서드에 의해 가려진다
+me.sayHola(); // My name is Hong
+```
+프로토타입이 소유한 프로퍼티(메서드 포함)를 프로토타입 프로퍼티, 
+인스턴스가 소유한 프로퍼티를 인스턴스가 소유한 프로퍼티를 인스턴스 프로퍼티라고 부른다
+
+프로토타입 프로퍼티와 같은 이름의 프로퍼티를 인스턴스에 추가하면 프로토타입 체인을 따라 프로토타입 프로퍼티를 검색하여
+프로토타입 프로퍼티를 덮어쓰는 것이 아니라 인스턴스 프로퍼티를 추가한다
+이때 인스턴스 메서드 sayHola는 프로토타입 메서드 sayHola를 오버라이딩했고 프로토타입 메서드 sayHola는 가려진다
+이처럼 상속관계에 의해 프로퍼티가 가려지는 현상을 프로퍼티 섀도잉이라 한다
+
+- 오버라이딩: 상위 클래스가 가지고 있는 하위 클래스가 재정의하여 사용하는 방식이다
+- 오비로딩: 함수의 이름은 동일하지만 매개변수의 타입 또는 개수가 다른 메서드를 구현하고 매개변수에 의해 메서드를 구별하여 호출하는 방식이다
+          자바스크립트는 오버로딩을 지원하지 않지만 arguments 객체를 사용하여 구현할 수 있다
+
+```js
+// 인스턴스 메서드를 삭제
+delete me.sayHola;
+// 인스턴스에는 sayHola 메서드가 없으므로 프로토타입 메서드가 호출된다
+me.sayHola(); // Hola Hong
+
+// 프로토타입 체인을 통해 프로토타입 메서드가 삭제되지 않는다
+delete me.sayHola;
+// 프로토타입 메서드가 호출된다
+me.sayHola(); // Hola Hong
+```
+이와 같이 하위 객체를 통해 프로토타입의 프로퍼티를 변경 또는 삭제하는 것은 불가능하다
+하위 객체를 통해 프로토타입에 get 액세스는 허용되나 set 액세스는 허용되지 않는다
+
+프로토타입 프로퍼티를 변경 또는 사겢를 하려면 하위 객체를 통해 프로토타입 체인으로 접근하는 것이 아니라 프로토타입에 직접 접근해야 한다
+```js
+// 프로토타입 메서드 변경
+Person.prototype.sayHola = function() {
+  console.log(`HaHa ${this.name}`);
+}
+me.sayHola(); // HaHa Hong
+
+// 프로토타입 메서드 삭제
+delete Person.prototype.sayHola();
+me.sayHola(); // TypeError: me.sayHola is not a function
+```
+
+## 정리
+생성자 함수로 객체(인스턴스)를 생성하고, 프로토타입 프로퍼티와 같은 이름의 프로퍼티를 인스턴스에 추가한다면 인스턴스 프로퍼티로 추가된다
+그러면 인스턴스 메서드는 프로토타입 프로퍼티를 가린다. 이를 프로퍼티 섀도잉 이라고 한다, 프로토타입의 메서드를 인스턴스 메서드에서 재정의하는 것은 오버라이딩이다.
+인스턴스 메서드를 삭제하다고 프로토타입 프로퍼티까지는 삭제되지 않는다. 프로토타입 프로퍼티를 삭제하려면 프로토타입 체인으로 접근하는 것이 아니라
+프로토타입에 직접 접근해서 삭제해야 한다
+
+
+### 프로토타입 교체
+
+#### 생성자 함수에 의한 프로토타입의 교체
+```js
+const Person = (function() {
+  function Person(name) {
+    this.name = name;
+  }
+
+  // 생성자 함수의 prototype 프로퍼티를 통해 프로토타입 교체
+  Person.prototype = {
+    sayHola() {
+      console.log(`Hola ${this.name}`);
+    }
+  };
+
+  return Person;
+}());
+
+const me = new Person('Hong');
+```
