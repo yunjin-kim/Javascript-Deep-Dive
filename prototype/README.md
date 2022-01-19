@@ -577,3 +577,91 @@ const Person = (function() {
 
 const me = new Person('Hong');
 ```
+Person 생성자 함수가 생성할 객체의 프로토타입을 객체로 교체한 것이다
+프로토타입으로 교체한 객체 리터럴에는 constructor 프로퍼티가 없다
+constructor 프로퍼티는 자바스크립트 엔진이 프로토타입을 생성할 때 암묵적으로 추가한 프로퍼티이다
+따라서 me 객체의 생성자 함수를 검색하면 Person이 아닌 Object가 나온다
+
+프로토타입을 교체하면 constructor 프로퍼티와 생성자 함수간의 연결이 파괴된다
+다시 프로토타입의 constructor 프로퍼티를 되살릴려면
+```js
+Person.prototype = {
+  constructor: Person,
+  sayHola() {
+    console.log(`Hola ${this.name}`)
+  }
+}
+```
+
+#### 인스턴스에 의한 프로토타입의 교체
+프로토타입은 생성자 함수의 prototype 프로퍼티뿐만 아니라 인스턴스의 __proto__ 접근자(또는 Object.getPrototypeOf 메서드)를 통해 접근할 수 있다
+따라서 프로토타입도 교체할 수 있다
+
+생성자 함수의 prototype 프로퍼티티에 다른 임의의 객체를 바인딩하는 것은 미래에 생성할 인스턴스의 프로토타입을 교체하는 것이다
+```js
+function Person(name) {
+  this.name = name;
+}
+
+const me = new Person('Hong');
+
+// 프로토타입으로 교체할 객체
+const parnet = {
+  sayHola() {
+    console.log(`Hola ${this.name}`);
+  }
+};
+
+// me 객체의 프로토타입을 parent 객체로 교체한다
+Object.setPrototypeOf(me, parent); // me.__proto__ = parent; 같게 동작
+
+me.sayHola(); // Hola Hong
+```
+프로토타입으로 교체한 객체에는 constructor 프로퍼티가 없으므로 constructor 프로퍼티와 생성자 함수간의 연결이 파괴된다
+따라서 프로토타입의 constructor 프로퍼티로 me 객체의 생성자 함수를 검색하면 Person이 아닌 Object가 나온다
+
+다시 프로토타입의 constructor 프로퍼티를 되살릴려면
+```js
+const parent = {
+  constructor: Person,
+  sayHola() {
+    console.log(`Hola ${this.name}`);
+  }
+}
+```
+
+생성자 함수에 의한 프로토타입 교체와 인스턴스에 의한 프로토타입 교체는 같아 보이지만 미묘한 차이가 있다
+
+생성자 함수에 의한 프로토타입 교체는 Person 생성자 함수의 prototype 프로퍼티가 교체된 프로토타입을 가리키지만
+인스턴스에 의한 교체는 Person 생성자 함수의 prototype 프로퍼티가 교체된 프로토타입을 가리키지 않는다
+
+
+## 정리
+프로토타입을 교체하는 방법에는 생성자 함수를 통해 교체하는 방법과
+인스턴스(__proto__, Object.setPrototypeOf 메서드)로 교체하는 방법이 있다
+이것을 많이 활용할지는 의문이다
+
+
+## instanceof 연산자
+
+instanceof 연산자는 이항 연산자로서 좌변에 객체를 가리키는 식별자, 우변에는 생성자 함수를 가리키는 식별자를 피연산자로 받는다
+우변에 피연산자가 함수가 아닌 경우 TypeError가 발생한다
+```js
+객체 instanceof 생성자 함수
+```
+**우변의 생성자 함수의 prototype에 바인딩된 객체가 좌변의 객체의 프로토타입 체인 상에 존재하면 true로 평가되고 아니면 false로 평가된다**
+
+```js
+// 생성자 함수
+function Person(name) {
+  this.name = name;
+}
+
+const me = new Person('Hong');
+
+// Person.prototype이 me 객체의 프로토타입 체인상에 존재하므로 true
+console.log(me instanceof Person); // true
+
+// Object.prototype이 me 객체의 프로토타입 체인상에 존재하므로 true
+console.log(me instanceof Objcet); // true
+```
