@@ -665,3 +665,55 @@ console.log(me instanceof Person); // true
 // Object.prototype이 me 객체의 프로토타입 체인상에 존재하므로 true
 console.log(me instanceof Objcet); // true
 ```
+
+```js
+// 생성자 함수
+function Person(name) {
+  this.name = name;
+}
+
+const me = new Person('Hong');
+
+// 프로토타입으로 교체할 객체
+const parent = {};
+
+// 프로토타입 교체
+Object.setPrototype(me, parent);
+
+// Person 생성자 함수와 parent 객체는 연결되어 있지 않다
+console.log(Person.prototype === parent); // false
+console.log(parent.constructor === Person); // false
+// Person.prototype이 me 객체의 프로토타입 체인상에 존재하지 않는다
+console.log(me instanceof Person); // false
+```
+
+프로토타입으로 교체한 parent 객체를 Person 생성자 함수의 prototype 프로퍼티에 바인딩한다
+```js
+Person.prototype = parent;
+// Person.prototype이 me 객체의 프로토타입 체인 상에 존재하므로 true
+console.log(me instanceof Person); // true
+// Object.prototype이 me 객체의 프로토타입 체인 상에 존재하므로 true
+console.log(me instanceof Object); // true
+```
+
+이처럼 instanceof 연산자는 프로토타입의 constructor 프로퍼티가 가리키는 생성자 함수를 찾는 것이 아니라
+**생성자 함수이 prototype에 바인딩된 객체가 프로토타입 체인 상에 존재하는지 확인한다**
+
+생성자 함수에 의해 프로토타입이 교체되어 constructor 프로퍼티와 생성자 함수 간의 연결이 파괴되어도
+생성자 함수의 prototype 프로퍼티와 프로토타입 간의 연결은 파괴되지 않으므로 instanceof는 아무런 영향을 받지 않는다
+
+
+## 직접 상속
+
+#### Object.create에 의한 직접 상속
+Object.create 메서드는 명시적으로 프로토타입을 지정하여 새로운 객체를 생성한다
+Object.create 메서드도 다른 객체 생성 방식과 마찬가지로 추산 연산 OrdinaryObjectCreate를 호출한다
+```js
+/**
+* 지정된 프로토타입 및 프로퍼티를 갖는 새로운 객체를 생성하여 반환한다
+* @param {Object} prototype - 생성할 객체의 프로토타입으로 지정할 객체
+* @param {Object} [propertiesObject] - 생성할 객체의 프로퍼티를 갖는 객체
+* @returns {Object} 지정된 프로토타입 및 프로퍼티를 갖는 새로운 객체
+*/
+Object.create(prototype[, propertiesObject])
+```
