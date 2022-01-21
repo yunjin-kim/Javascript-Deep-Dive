@@ -449,6 +449,7 @@ console.log(me.hasOwnProperty('name')); // true
 Object.getPrototypeOf(me) === Person.prototype; // true
 
 Object.getPrototypeOf(Person.prototype) === Object.prototype; // true
+
 ```
 Person 생성자 함수에 의해 생성된 me 객체는 Object.prototype의 매서드인 hasOwnProperty를 호출할 수 있다
 이것은 me 객체가 Person.prototype뿐만 아니라 Object.prototype도 상속 받았다는 것을 의미한다
@@ -480,6 +481,18 @@ me.hasOwnProperty('name')과 같이 메서드를 호출하면 자바스크립트
 Object.prototype을 프로토타입 체인의 종점이라 한다. 프로토타입 체인은 상속과 프로퍼티 검색을 위한 메커니즘이다
 스코프 체인은 식별자 검색을 위한 메커니즘이다.
 스코프 체인과 프로토타입 체인이 서로 연관없이 별도로 동작하는 것이 아니라 서로 협력하며 식별자와 프로퍼티를 검색하는데 사용된다
+```js
+// hasOwnProperty 만 사용하는 것이 아니라 call 메서드도 사용하면 좋다
+const foo = {
+  hasOwn: function() {
+    return 'hasOwn';
+  },
+  bar: 'string'
+}
+console.log(foo.hasOwnProperty('bar')); // hasOwnProperty
+console.log(Object.prototype.hasOwnProperty.call(foo, 'bar')); // true
+```
+call 메서드를 쓰는 이유는 객체가 프로토타입 체인 종점에 위치할 경우 call 메서드를 쓰지 않는다면 에러가 발생한다
 
 
 ### 오버라이딩, 프로퍼티 섀도잉
@@ -639,7 +652,6 @@ const parent = {
 ## 정리
 프로토타입을 교체하는 방법에는 생성자 함수를 통해 교체하는 방법과
 인스턴스(__proto__, Object.setPrototypeOf 메서드)로 교체하는 방법이 있다
-이것을 많이 활용할지는 의문이다
 
 
 ## instanceof 연산자
@@ -716,4 +728,131 @@ Object.create 메서드도 다른 객체 생성 방식과 마찬가지로 추산
 * @returns {Object} 지정된 프로토타입 및 프로퍼티를 갖는 새로운 객체
 */
 Object.create(prototype[, propertiesObject])
+```
+
+```js
+// 생성된 객체는 프로토타입 체인의 종점에 위치한다
+
+// obj = {}; 과 동일하다
+let obj = Object.create(Object.prototype);
+console.log(Object.getPrototype(obj) === Object.prototype); // true
+
+// obj ={ x: 1 }; 과 동일하다
+obj = Object.create(Object.prototype, {
+  x: { value: 1, writable: true, enumerable: true, configurable: true }
+})
+```
+Object.create 멧서드는 첫번째 매개변수에 전달한 객체의 프로토타입 체인에 속하는 객체를 생성한다
+즉, 객체를 생성하면서 직접적으로 상속을 구현하는 것이다
+Object.create 메서드의 장점
+- new 연산자가 없이도 객체를 생성할 수 있다
+- 프로토타입을 지정하면서 객체를 생성할 수 있다
+- 객체 리터럴에 의해 생성된 객체도 상속받을 수 있다
+
+하지만 Object.prototype의 빌트인 매서드를 객체가 직접 호출하는 것을 권장하지 않는다
+그 이유는 Object.create 메서드를 통해 프로토타입 체인의 종점에 위치하는 객체를 생성할 수 있기 때문이다
+프로토타입 체인의 종점에 위치하는 객체는 Object.prototype의 빌트인 매서드를 사용할 수 없다
+```js
+// 프로토타입이 null인 객체, 즉 프로토타입 체인의 종점에 위치하는 객체를 생성한다
+const obj = Object.create(null);
+obj.x = 1;
+
+console.log(Object.getPrototype(obj) === null); // true
+
+// obj는 Object.prototype의 빌트인 메서드를 사용할 수 없다
+console.log(obj.hasOwnPrototype('x')); // TypeError
+```
+따라서 이와 같은 에러를 발생시킬 위험을 없애기 위해 Object.prototype의 빌트인 메서드는 간접적으로 호출하는 것이 좋다
+```js
+// 프로토타입이 null인 객체를 생성한다
+const obj = Object.create(null);
+obj.x = 1;
+
+// Object.prototype의 빌트인 메서드는 객체로 직접 호출하지 않는다
+console.log(Object.prototype.hasOwnProperty.call(obj, 'x')) // true
+```
+
+#### 객체 리터럴 내부에서 __proto__ 에 의한 직접 상속
+```js
+const myProto = { x: 10 };
+
+const obj = {
+  y: 20,
+  // 객체를 직접 상속 받는다
+  // obj -> myProto -> Object.prototype -> null
+  __proto__: myProto
+};
+
+console.log(obj.x, obj.y); // 10 20
+```
+
+## 정리
+항상 객체의 프로토타입을 호출할 때는 call 메서드를 활용해 간접 호출을 하자
+
+
+## 정적 프로퍼티 / 메서드
+정적 프로퍼티/메서드는 생성자 함수로 인스턴스를 생성하지 않아도 참조/호출할 수 있는 프로퍼티/메서드를 말한다
+
+```js
+function Person(name) {
+  this.name = name;
+}
+
+// 프로토타입 메서드
+Person.prototype.sayHola = function() {
+  console.log(`Hola ${this.name}`);
+};
+
+// 정적 프로퍼티
+Person.staticProps = 'static prop';
+
+// 정적 메서드
+Person.staticMethod = function () {
+  console.log('staticMethod');
+}
+
+const me = new Person('Hong');
+
+// 생성자 함수에 추가한 정적 프로퍼티/메서드를 생성자 함수로 참조/호출한다
+Person.staticMethod(); // taticMethod
+
+// 정적 프로퍼티/메서드는 생성자 함수가 생성할 인스턴스로 참조/호출할 수 없다
+// 인스턴스로 참조/호출할 수 있는 프로퍼티/메서드는 프로토타입 체인 상에 존재해야 한다
+me.staticMethod(); // TypeError: me.staticMethod is not a function
+```
+
+Person 생성자 함수는 객체이므로 자신의 프로퍼티/메서드를 소유할 수 있다
+Person 생성자 함수 객체가 소유한 프로퍼티/메서드를 정적 프로퍼티/메서드라고 한다
+정적 프로퍼티/메서드는 생성자 함수가 생성한 인스턴스로 참조/호출할 수 없다
+
+<img src='../img/prototype_static.png' width='500'/>
+
+Object.create 메서드는 Object 생성자 함수의 정적 메서드고 Object.prototype.hasOwnPrototype 메서드는 Object.prototype 메서드다
+따라서 Object.create 메서드는 인스턴스, 즉 Object 생성자 함수가 생성한 객체를 호출할 수 없다
+하지만 Object.prototype.hasOwnPrototype 메서드는 모든 객체의 프로토타입 체인의 종점, 즉 Object.prototype의 메서드이므로 모든 객체가 호출할 수 있다
+
+만약 인스턴스 / 프로토타입 메서드 내에서 this를 사용하지 않는다면 그 메서드는 정적 메서드로 변경할 수 있다
+인스턴스가 호출한 인스턴스 / 프로토타입 메서든 내에서 this는 인스턴스를 가리킨다
+메서드내에서 인스턴스를 참조할 필요가 없다면 정적 메서드로 변경하여도 동작한다
+프로토타입 메서드를 호출하려면 인스턴스를 생성해야 하지만 정적 메서드는 인스턴스를 생성하지 않아도 호출할 수 있다
+```js
+function Foo() {}
+
+// 프로토타입 메서드
+// this를 참조하지 않는 프로토타입 메서드는 정적 메서드로 변경하여도 동일한 효과를 얻을 수 있다
+Foo.prototype.x = function() {
+  console.log('x');
+};
+
+const foo = new Foo();
+// 프로토타입 메서드를 호출하려면 인스턴스를 생성하야 한다
+foo.x(); // x
+
+// 정적 메서드
+Foo.x = function() {
+  console.log('x');
+};
+
+// 정적 메서드는 인스턴스를 생성하지 않아도 호출할 수 있다
+Foo.x(); // x
 ```
