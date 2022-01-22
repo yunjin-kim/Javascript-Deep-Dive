@@ -856,3 +856,80 @@ Foo.x = function() {
 // 정적 메서드는 인스턴스를 생성하지 않아도 호출할 수 있다
 Foo.x(); // x
 ```
+
+
+### 프로퍼티 존재 확인
+
+#### in 연산자
+```js
+const person = {
+  name: 'Hong',
+  address: 'Seoul'
+}
+console.log('name' in person); // true
+console.log('age' in person); // false
+```
+in 연산자는 확인 대상 댇체의 프로퍼티 뿐만 아니라 확인 대상 객체가 상속 받은 프로토타입의 프로퍼티를 확인한다
+```js
+console.log('toString' in person); // true
+```
+in 연산자가 person 객체가 속한 프로토타입 체인 상에 존재하는 모든 프로토타입에서 toString 프로퍼티를 검색했기 때문이다
+toString은 Object.prototype의 메서드다
+
+in 연산자 대신 ES6에서 도입된 Reflect.has 메서드를 사용할 수 있다. in 연산자와 동일하게 동작한다
+```js
+const person = { nmae: 'Hong' };
+
+console.log(Reflect.has(person, 'name')); // true
+console.log(Reflect.has(person, 'toString')); // true
+```
+
+#### Object.prototype.hasOwnProperty 메서드
+Object.prototype.hasOwnProperty는 상속받은 프로토타입의 프로퍼티의 키인 경우 false가 나온다
+```js
+console.log(person.hasOwnProperty('name')); // true
+console.log(person.hasOwnProperty('toString')); // false
+```
+
+
+### 프로퍼티 열거
+
+#### for ... in 문
+객체의 모든 프로퍼티를 순회하며 열거하려면 for ... in 문을 사용한다
+```js
+const person = {
+  name: 'Hong',
+  address: 'Seoul'
+};
+
+// for ... in 문의 변수 prop에 person 객체의 프로퍼티 키가 할당된다
+for (const key in person) {
+  console.log(key + ':' + person[key]);
+}
+// name : Hong
+// address : Seoul
+```
+
+for ... in 문은 상속 받은 프로토타입의 프로퍼티까지 열거하지만 toString 같은 Object.prototype의 프로퍼티는 열거하지 않는다
+
+toString 메서드는 열거할 수 없도록 정의되어 있는 프로퍼티이기 때문이다
+Object.prototype.string 프로퍼티의 프로퍼티 어트리뷰트 [[Enumerable]]의 값이 false 이기 때문이다
+
+
+### Object.keys/values/entires 메서드
+```js
+const person = {
+  name: 'Hong',
+  address: 'Seoul'
+}
+
+console.log(Object.keys(person)); // ["name", "address"]
+console.log(Object.values(person)); // ["Hong", "Seoul"]
+console.log(Object.entries(person)); // [["name", "Hong"], ["address", "Seoul"]]
+```
+
+
+## 정리
+for ... in 문은 객체의 프로토타입 체인 상에 존재하는 모든 프로토타입의 프로퍼티 중에서 프로퍼티 어트리뷰트 [[Enumerable]]의 값이 true인 프로퍼티만 순회한다
+
+**객체 자신의 고유 프로퍼티만 열거하기 위해서는 for ... in 문보다는 Object.keys/values/entries**를 사용하자
