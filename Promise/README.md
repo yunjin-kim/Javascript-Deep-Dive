@@ -49,6 +49,7 @@ const promise = new Promise((resolve, reject) => {
 ```
 
 - 프로미스의 상태 정보
+
 |프로미스 상태 정보|의미|상태 변경 조건|
 |------|--------------|------------------|
 |pending|비동기 처리가 아직 수행되지 않은 상태|프로미스가 생성된 직후 기본 상태|
@@ -96,4 +97,82 @@ new Promise(() => {})
 ```
 
 
-### 프로미스 에러 처리
+### 프로미스 체이닝
+then, catch, finally 후속 처리 메서드는 언제나 프로미스를 반환하므로 연속적으로 호출할 수 있다
+이를 프로미스 체이닝이라 한다
+
+|후속 처리 메서드|콜백 함수의 인수|후속 처리 메서드의 반환값|
+|------|--------------|------------------|
+|then|promiseGet 함수가 반환한 프로미스가 resolve한 값|콜백 함수가 반환한 프로미스|
+|then|첫번째 then 메서드가 반환한 프로미스가 resolve한 값|콜백 함수가 반환한 값을 resolve한 프로미스|
+|catch|promiseGet 함수 또는 앞선 후속 처리 메서드가 반환한 프로미스가 rejec한 값|콜백 함수가 반환한 값을 resolve한 프로미스|
+
+프로미스도 콜백 패턴을 사용하지 않는 것은 아니다
+콜백 패턴은 가독성이 좋지 않아 asnyc/await 을 사용하는 편이 좋다
+
+
+### 프로미스의 정적 메서드
+
+#### Promise.resolve / Promise.reject
+Promise.resolve와 Promise.reject 메서드는 이미 존재하는 값을 래핑하여 프로미스를 생성하기 위해 사용한다
+
+Promise.resolve 메서드는 인수로 전달받은 값을 resolve하는 프로미스를 생성한다
+```js
+// 배열을 resolve하는 프로미스
+const resolvedPromise = Promise.resolve([1, 2, 3]);
+resolvedPromise.then(console.log); // [1, 2, 3]
+
+// 동일하게 동작한다
+const resolvedPromise = new Promise(resolve => resolve([1, 2, 3]));
+resolvedPromise.then(console.log); // [1, 2, 3]
+```
+
+Promise.reject 메서드는 인수로 전달받은 값을 reject하는 프로미스를 생성한다
+```js
+// 에러객체를 reject하는 프로미스
+const rejectdPromise = Promise.reject(new Error('Error'));
+rejectdPromise.catch(console.log); // Error: Error
+
+// 동일하게 동작한다
+const rejectdPromise = new Promise((_, reject) => reject(new Error('Error')));
+rejectdPromise.catch(console.log); // Error: Error
+```
+
+#### Promise.all
+Promise.all 메서드는 여러개의 비동기 처리를 모두 병렬 처리할떄 사용한다
+```js
+const requestData1 = () => 
+  new Promise(resolve => setTimeout(() => resolve(1), 3000));
+const requestData2 = () => 
+  new Promise(resolve => setTimeout(() => resolve(2), 2000));
+const requestData3 = () => 
+  new Promise(resolve => setTimeout(() => resolve(3), 1000));
+
+// 세개의 비동기 처리를 병렬로 처리
+Promise.all([requestData1(), requestData2(), requestData3()])
+  .then(console.log) // [1, 2, 3] 약 3초 소요
+  .catch(console.error);
+```
+위 예제는 다음과 같이 동작한다
+- 첫번째 프로미스는 3초 후에 1을 resolve한다
+- 두번째 프로미스는 2초 후에 2을 resolve한다
+- 세번째 프로미스는 1초 후에 3을 resolve한다
+
+Promise.all 메서드는 프로미스를 요소로 갖는 배열 등의 이터러블을 인수로 전달받는다
+그리고 전달받은 모든 프로미스가 모두 fulfilled 상태가 되면 모든 처리 결과를 배열에 저장해 새로운 프로미스로 반환한다
+따라서 Promise.all 메서드가 종료하는데 걸리는 시간은 가장 늦게 fulfilled 상태가 되는 프로미스의 처리 시간보다 조금 더 길다
+Promise.all 메서드는 첫번째 프로미스가 resolve한 처리 결과부터 차례대로 배열에 저장해 그 배열을 resolve하는 새로운 프로미스를 반환한다
+**치리 순서가 보장된다**
+Promise.all 메서드는 인수로 전달받은 배열의 프로미스가 하나라도 rejected 상태가 되면 
+나머지 프로미스가 fulfilled 상태가 되는 것을 기다리지 않고 에러를 뿜으며 즉시 종료한다
+
+Promise.all 메서드는 인수로 전달 받은 이터러블의 요소가 프로미스가 아닌 경우 Promise.resolve 메서드를 통해 프로미스로 래핑한다
+```js
+Promise.all([
+  1, // -> Promise.resolve(1)
+  2, // -> Promise.resolve(2)
+  3, // -> Promise.resolve(3)
+])
+  .then(console.log) // [1, 2, 3]
+  .catch(console.log);
+```
