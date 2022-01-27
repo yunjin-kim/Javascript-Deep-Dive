@@ -176,3 +176,51 @@ Promise.all([
   .then(console.log) // [1, 2, 3]
   .catch(console.log);
 ```
+
+#### Promise.race
+Promise.race 메서드는 Promise.all 메서드와 동일하게 프로미스를 요소로 갖는 배열 등의 이터러블을 인수로 받는다
+Promise.race 메서드는 Promise.all 메서드처럼 모든 프로미스가 fulfilled 상태가 되는 것으 기다리는 것이 아니라
+가장 먼저 fulfilled 상태가 된 프로미스의 처리 결과를 resolve하는 새로운 프로미스를 반환한다
+```js
+Promise.race([
+  new Promise(resolve => setTimeout(() => resolve(1), 3000)), // 1
+  new Promise(resolve => setTimeout(() => resolve(2), 2000)), // 2
+  new Promise(resolve => setTimeout(() => resolve(3), 1000)), // 3
+])
+.then(console.log) // 3
+.catch(console.log)
+```
+프로미스가 rejected 상태가 되면 Promise.all과 동일하게 처리된다
+Promise.race에 전달된 프로미스가 하나라도 rejected 상태가 되면 에러를 reject하는 새로운 프로미스를 즉시 반환한다
+
+
+#### Promise.allSettled
+Promise.allSettled 메서드는 프로미스를 요소로 갖는 배열 등의 이터러블을 인수로 받는다
+그리고 전달받은 프로미스가 모두 settled 상태(비동기 처리가 수행된 상태, 즉 fulfulled 또는 rejected 상태)가 되면 처리 결과를 배열로 반환한다
+Promise.allSettled 메서드는 IE를 제외하고 지원한다
+```js
+Promise.allSettled([
+  new Promise(resolve => setTimeout(() => resolve(1), 2000)),
+  new Promise((_, reject) => setTimeout(() => reject(new Error('Error!')), 1000))
+]).then(console.log)
+/*
+[
+  {status: "fulfilled", value: 1},
+  {staus: "rejected", reason: Error: Error! at <anonymous>}
+]
+*/
+```
+Promise.allSettled 메서드가 반환한 배열에는 fulfilled 또는 rejected 상태와는 상관없이 Promise.allSettled 메서드가 인수로 전달받은 모든 프로미스들의 처리 결과가 모두 담겨있다
+프로미스의 처리 결과를 나타내는 객체는 다음과 같다
+- 프로미스가 fulfulled 상태인 경우 비동기 처리 상태를 나타내는 status 프로퍼티와 처리 결과를 나타내는 value 프로퍼티를 갖는다
+- 프로미스가 rejected 상태인 경우 비동기 처리 상태를 나타내는 status 프로퍼티와 에러를 나타내는 reason 프로퍼티를 갖는다
+
+## 정리
+Promise.resolve/rejct 는 프로미스를 생성하기 위해 값을 래핑한다
+Promise.all 은 여러 개의 비동기 처리를 할 수 있는데 제일 오래 걸리는 비동기 처리가 끝나면 비동기 함수가 작성한 순서대로 처리된다, rejected 상태가 하나라도 생기면 순간 즉시 종료하고 에러를 뿜는다
+Promise.race 는 여러 개의 비동기 처리를 할 수 있는데 먼저 끝나는 비동기 함수부터 처리된다, rejected 상태가 하나라도 생기면 순간 즉시 종료하고 에러를 뿜는다
+Promise.allSettled 는 fulfilled 상태의 비동기는 처리결과를 value 프로퍼티를 갖고 rejected 상태의 비동기 처리는 reason 프로퍼티에서 에러를 나타낸다
+상황에 맞게 잘 사용하면 좋을 것 같음!
+
+
+## 마이크로태스크 큐
