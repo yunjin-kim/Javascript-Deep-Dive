@@ -47,3 +47,83 @@ class MyClass {
 ```
 제너레이터 함수는 화살표 함수로 정의할 수 없고 new 연산자와 함께 생성자 함수로 호출할 수 없다
 
+
+## 제너레이터 객체
+
+**제너레이터 함수를 호출하면 일반 함수처럼 함수 코드 블럭을 실행하는 것이 아니라 제너레이터 객체를 생성해 반환한다**
+**제너레이터 함수가 반환한 제너레이터 객체는 이터러블이면서 동시에 이터레이터 이다**
+
+제너레이터 객체는 Symbol.iterator 메서드를 상속받는 이터러블이면서
+value, done 프로퍼티를 갖는 이터레이터 리절트 객체를 반환하는 next 메서드를 소유한 이터레이터이다
+```js
+// 제너레이터 함수 
+function* genFunc() {
+  try {
+  
+  } catch(e) {
+    yield 1;
+    yield 2;
+  }
+}
+
+// 제너레이터 함수를 호출하면 제너레이터 객체를 반환한다
+const generator = genFunc();
+
+console.log(generator.next()); // {value: 1, done: false}
+console.log(generator.return("End")); // {value: "End", done: true}
+console.log(generator.throw("Error")); // {value: undefined, done: true}
+```
+- throw 메서드를 호출하면 인수로 전달받은 에러를 발생시키고 undefined를 value 프로퍼티 값으로, true를 done 프로퍼티값으로 갖는 이터레이터 리절트 객체를 반환한다
+
+
+## 제너레이터의 일시 중지와 재개
+
+**yield 키워드는 제너레이터 함수의 실행을 일시 중지시키거나 yield 키워드 뒤에 오는 표현식의 평가 결과를 제너레이터 함수 호출자에게 반환한다**
+
+제너레이터 객체의 next 메서드를 호출하면 yield 표현식까지 실행되고 일시 중지되고 함수의 제어권이 호출자로 양도된다
+이때 제너레이터 객체의 next 메서드는 value, done 프로퍼티를 갖는 이터레이터 리절트 객체를 반환한다
+next 메서드가 반환한 이터레이터 리절트 객체의 value 프로퍼티에는 yield 표현식에서 yield된 값(yield키워드 뒤의 값)이 할당되고 
+done 프로퍼티에는 제너레이터 함수가 끝까지 실행되었는지를 나타내는 불리언 값이 할당된다
+
+이처럼 next 메서드를 반복 호출하여 yield 표현식까지 실행과 일시 중지를 반복하다가 제너레이터 함수가 끝까지 실행되면 
+next 메서드가 반환하는 이터레이터 리절트 객체의 value 프로퍼티에는 제너레이터 함수의 반환값이 할당되고 done 프로퍼티에는 제너레이터 함수가 끝까지 실행되었을을 알리는 true가 할당된다
+
+이터레이터의 next 메서드와 달리 제너레이터 객체의 next 메서드에는 인수를 전달할 수 있다
+**제너레이터 객체의 next 메서드에 전달한 인수는 제너레이터 함수의 yield 표현식을 할당받는 변수에 할당된다**
+yield 표현식을 할당받는 변수에 yield 표현식의 평가 결과가 할당되지 않는 것을 주의해야 한다
+```js
+function* genFunc() {
+  // x 변수에는 아직 아무것도 할당되지 않았다. x 변수의 값은 next 메서드가 두번째 호출될 때 결정된다
+  const x = yield 1;
+
+  // 두번째 next 메서드를 호출할 때 전달한 인수 10은 첫번째 yield 표현식을 할당받는 x 변수에 할당된다
+  // 이때 yield 된 값 x + 10은 next 메서드가 반환한 이터레이터 리절트 객체의 value 프로퍼티에 할당된다
+  const y = yield (x + 10);
+
+  // 세번째 next 메서드를 호출할 때 전달한 인수 20은 두번째 yield 표현식을 할당받는 y 변수에 할당된다
+  // const y = yield(x + 10); 은 세번째 next 메서드를 호출했을 때 완료된다
+  // 이때 제너레이터 함수의 반환값 x + y 는 next 메서드가 반환한 이터레이터 리절트 객체의 value 프로퍼티에 할당된다
+  // 일반적으로 제너레이터의 반환값은 의미가 없다
+  // 따라서 제너레이터에서는 값을 반환할 필요가 없고 return은 종료의 의미로만 사용해야 한다
+  return x + y;
+}
+
+// 제너레이터 함수를 호출하면 제너레이터 객체를 반환한다
+// 이터러블이면 동시에 이터레이터인 재네레이터 객체는 next 메서드를 갖는다
+const generator = genFunc(0);
+
+// 처음 호출하는 next 메서드에는 인수를 전달하지 않는다
+// 만약 처음 호출하는 next 메서드에 인수를 전달하면 무시된다
+let res = generator.next();
+console.log(res); // {value: 1, done: false}
+
+// next 메서드에 인수를 전달한 10은 genFunc 함수의 x 변수에 할당된다
+// next 메서드가 반환한 이터레이터 리절트 객체의 value 프로퍼티에는 두번째 yield 된 값 20이 할당된다
+res = generator.next(10);
+console.log(res); // {value: 20, done: false}
+
+// next 메서드에 인수로 전달한 20은 genFunc 함수의 y 변수에 할당된다
+// next 메서드가 반환한 이터레이터 리절트 객체의 value 프로퍼티에는 제너레이터 함수의 반환값 30이 할당된다
+res = generator(20);
+console.log(res); // {value: 30, done: true}
+```
