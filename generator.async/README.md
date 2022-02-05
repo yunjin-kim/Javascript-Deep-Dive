@@ -127,3 +127,62 @@ console.log(res); // {value: 20, done: false}
 res = generator(20);
 console.log(res); // {value: 30, done: true}
 ```
+
+
+## 제너레이터 활용
+
+- 피보나치 수열
+```js
+// 무한 이터러블을 생성하는 함수
+const infiniteFibonacci = (function() {
+  let [pre, cur] = [0, 1];
+
+  return {
+    [Symbol.iterator]() { return this; },
+    next() {
+      [pre, cur] = [cur, pre + cur];
+      // 무한 이터러블이므로 done 프로퍼티를 생략한다
+      return { value: cur };
+    }
+  }
+}());
+
+for (const num of infiniteFibonacci) {
+  if (num > 10000) break;
+  console.log(num); // 1, 2 3 5 8 ... 2584 4181 6765
+}
+
+// 무한 이터러블을 생성하는 제너레이터 함수
+const infiniteFibonacci = (function* () {
+  let [pre, cur] = [0, 1];
+
+  while(true) {
+    [pre, cur] = [cur, pre + cur];
+    yield cur;
+  }
+}());
+
+for (const num of infiniteFibonacci) {
+  if (num > 10000) break;
+  console.log(num); // 1, 2 3 5 8 ... 2584 4181 6765
+}
+```
+
+
+## async/await
+
+await 키워드는 반드시 async 함수 내부에서 사용해야 한다
+async 함수는 async 키워드를 사영해 정의하며 언제나 프로미스를 반횐한다
+async 함수가 명시적으로 프로미스를 반환하지 않더라도 async 함수는 암묵적으로 반환값을 resolve하는 프로미스를 반환한다
+
+await 키워드는 프로미스가 settled 상태(비동기 처리가 수행된 상태)가 될 때까지 대기하다가 settled 상태가 되면 프로미스가 resolve한 처리 결과를 반환한다
+await 키워드는 반드시 프로미스 앞에서 사용해야 한다
+```js
+const getUsername = asnyc (id) => {
+  const res = await fetch(`https://example.com/users/${id}`); // 1
+  const { name } = await res.json(); // 2
+}
+getUsername('qwer1234');
+```
+fetch 함수가 수행한 HTTP 요청에 대한 서버의 응답이 도착해서 fetch 함수가 반환한 프로미스가 settled 상태가 될때까지 1 은 대기하게 된다
+이후 프로미스가 settled 상태가 되면 프로미스가 resolve한 처리 결과가 res 변수에 할당된다
