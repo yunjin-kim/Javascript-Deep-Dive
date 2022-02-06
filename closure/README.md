@@ -237,3 +237,11 @@ console.log(counter(increase)); // 2
 console.log(counter(decrease)); // 1
 console.log(counter(decrease)); // 0
 ```
+
+
+## 정리
+렉시컬 스코프는 정적 스코프라고 부를 수 있다. 정적 스코프는 어디에서 정의했는지에 따라 상위 스코프가 결정된다
+클로저는 중첩 함수에서 내부 함수가 만들어지는 시점에서 내부 함수의 부모 함수가 가지고 있는 유효범위, 변수 등을 내부 함수가 동봉(closure)해서 가지고 있다
+그래서 언제든지 호출하면 변수 등에 접근할 수 있다
+
+[생활코딩](https://www.youtube.com/watch?v=bwwaSwf7vkE)
