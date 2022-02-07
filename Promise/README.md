@@ -215,6 +215,7 @@ Promise.allSettled 메서드가 반환한 배열에는 fulfilled 또는 rejected
 - 프로미스가 fulfulled 상태인 경우 비동기 처리 상태를 나타내는 status 프로퍼티와 처리 결과를 나타내는 value 프로퍼티를 갖는다
 - 프로미스가 rejected 상태인 경우 비동기 처리 상태를 나타내는 status 프로퍼티와 에러를 나타내는 reason 프로퍼티를 갖는다
 
+
 ## 정리
 Promise.resolve/rejct 는 프로미스를 생성하기 위해 값을 래핑한다
 Promise.all 은 여러 개의 비동기 처리를 할 수 있는데 제일 오래 걸리는 비동기 처리가 끝나면 비동기 함수가 작성한 순서대로 처리된다, rejected 상태가 하나라도 생기면 순간 즉시 종료하고 에러를 뿜는다
@@ -280,7 +281,9 @@ const request = {
     });
   },
   delete(url) {
-    return fetch(url, { method: 'DELETE' })
+    return fetch(url, { method: 'DELETE ' })
   }
 }
-```
+``` 
+
+[생활코딩](https://www.youtube.com/watch?v=Sn0ublt7CWM)
